@@ -432,15 +432,26 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
                                    offsetRight: &offsetRight,
                                    offsetBottom: &offsetBottom)
             
-            // offsets for y-labels
+          // offsets for y-labels
             if leftAxis.needsOffset
             {
-                offsetLeft += leftAxis.requiredSize().width
+                offsetLeft += (leftAxis.requiredSize().width + 8)
             }
-            
-            if rightAxis.needsOffset
+
+            if offsetLeft < 10
             {
-                offsetRight += rightAxis.requiredSize().width
+                offsetLeft = 20
+            }            
+            //if rightAxis.needsOffset
+            //{
+            //offsetRight += rightAxis.requiredSize().width
+            //}
+            
+            //offsetLeft = 16
+            offsetRight = 15
+            if rightAxis.isEnabled && rightAxis.isDrawLabelsEnabled
+            {
+               offsetRight = 46
             }
 
             if xAxis.isEnabled && xAxis.isDrawLabelsEnabled
