@@ -12,12 +12,8 @@
 import Foundation
 import CoreGraphics
 
-#if canImport(UIKit)
-    import UIKit
-#endif
-
-#if canImport(Cocoa)
-import Cocoa
+#if !os(OSX)
+import UIKit
 #endif
 
 @objc(ChartYAxisRenderer)
@@ -124,7 +120,6 @@ open class YAxisRenderer: AxisRendererBase
         context.restoreGState()
     }
     
-    
     /// draws the y-labels on the specified x-position
     internal func drawYLabels(
         context: CGContext,
@@ -146,16 +141,16 @@ open class YAxisRenderer: AxisRendererBase
         let limitLines = yAxis.limitLines //вытянули масив линий
         
         var yOffset = CGFloat(0.0)
-        
+
         if limitLines.count == 0
         {
             yOffset = CGFloat(-6.0)
         }
-        
+
         for i in stride(from: from, to: to, by: 1)
         {
             let text = yAxis.getFormattedLabel(i)
-            
+
             ChartUtils.drawText(
                 context: context,
                 text: text,
@@ -204,7 +199,7 @@ open class YAxisRenderer: AxisRendererBase
         
         // let limitSecond = getCGFloat(from:limitSecondText) // нужно преобразовать в число значение оси
         let gradeSecond = positions[2].y
-        
+
         let limitFirstChanged = String(format:"%.5f", limitFirstText.doubleValue)
         let limitFirst = getCGFloat(from: limitFirstChanged)
         
@@ -226,25 +221,26 @@ open class YAxisRenderer: AxisRendererBase
                                 green: CGFloat(components[1]),
                                 blue: CGFloat(components[2]),
                                 alpha: CGFloat(components[3]))
-        
+
         let labelTextColor = UIColor(red: CGFloat(0),
-                                     green: CGFloat(0),
-                                     blue: CGFloat(0),
-                                     alpha: CGFloat(1))
+                                green: CGFloat(0),
+                                blue: CGFloat(0),
+                                alpha: CGFloat(1))
         
         drawRect(pointX: CGFloat(fixedPosition),
-                 pointY: CGFloat(positionY),
-                 context: UIGraphicsGetCurrentContext()!,
-                 strokeColor: rectColor,
-                 fillColor: rectColor)
+            pointY: CGFloat(positionY),
+            context: UIGraphicsGetCurrentContext()!,
+            strokeColor: rectColor,
+            fillColor: rectColor)
         
         ChartUtils.drawText(
             context: context,
             text: getString(from: CGFloat(l.limit)),
-            point: CGPoint(x: fixedPosition-2, y: positionYText),
+            point: CGPoint(x: fixedPosition-1, y: positionYText),
             align: textAlign,
             attributes: [NSAttributedString.Key.font: labelFont,  NSAttributedString.Key.foregroundColor: labelTextColor])
     }
+    
     
     //Method that you need to parse string to cgfloat
     private func getCGFloat(from string: String) -> CGFloat?{
@@ -270,17 +266,18 @@ open class YAxisRenderer: AxisRendererBase
         return nil
     }
     
+    
     //Method that you need to draw rectangle
     //If you have colors in another format (CGColor, RGB etc.. just conver them to UIColor)
     private func drawRect(pointX: CGFloat,pointY: CGFloat, context: CGContext, strokeColor: UIColor, fillColor: UIColor){
         let path = UIBezierPath()
         
-        path.move(to: CGPoint(x:pointX-10.0, y: pointY+10))
-        path.addLine(to: CGPoint(x: pointX-4.0, y: pointY))
-        path.addLine(to: CGPoint(x: pointX+46.0, y: pointY))
-        path.addLine(to: CGPoint(x: pointX+46.0, y: pointY+20))
-        path.addLine(to: CGPoint(x: pointX-4.0, y: pointY+20))
-        path.addLine(to: CGPoint(x:pointX-10.0, y: pointY+10))
+        path.move(to: CGPoint(x:pointX-4.0, y: pointY+10))
+        path.addLine(to: CGPoint(x: pointX+2.0, y: pointY))
+        path.addLine(to: CGPoint(x: pointX+52.0, y: pointY))
+        path.addLine(to: CGPoint(x: pointX+52.0, y: pointY+20))
+        path.addLine(to: CGPoint(x: pointX+2.0, y: pointY+20))
+        path.addLine(to: CGPoint(x:pointX-4.0, y: pointY+10))
         path.close()
         
         let bezierPath = path.cgPath
@@ -288,7 +285,7 @@ open class YAxisRenderer: AxisRendererBase
         strokeColor.setStroke()
         context.addPath(bezierPath)
         context.drawPath(using: .fillStroke)
-    }
+    }   
     
     
     open override func renderGridLines(context: CGContext)
@@ -326,9 +323,12 @@ open class YAxisRenderer: AxisRendererBase
             }
             
             // draw the grid
-            positions.forEach { drawGridLine(context: context, position: $0) }
+            for i in 0 ..< positions.count
+            {
+                drawGridLine(context: context, position: positions[i])
+            }
         }
-
+        
         if yAxis.drawZeroLineEnabled
         {
             // draw zero line
@@ -371,12 +371,12 @@ open class YAxisRenderer: AxisRendererBase
         {
             positions.append(CGPoint(x: 0.0, y: entries[i]))
         }
-
+        
         transformer.pointValuesToPixel(&positions)
         
         return positions
     }
-
+    
     /// Draws the zero line at the specified position.
     @objc open func drawZeroLine(context: CGContext)
     {
@@ -393,12 +393,12 @@ open class YAxisRenderer: AxisRendererBase
         clippingRect.origin.y -= yAxis.zeroLineWidth / 2.0
         clippingRect.size.height += yAxis.zeroLineWidth
         context.clip(to: clippingRect)
-
+        
         context.setStrokeColor(zeroLineColor.cgColor)
         context.setLineWidth(yAxis.zeroLineWidth)
         
         let pos = transformer.pixelForValues(x: 0.0, y: 0.0)
-    
+        
         if yAxis.zeroLineDashLengths != nil
         {
             context.setLineDash(phase: yAxis.zeroLineDashPhase, lengths: yAxis.zeroLineDashLengths!)
@@ -481,45 +481,45 @@ open class YAxisRenderer: AxisRendererBase
                 let xOffset: CGFloat = 4.0 + l.xOffset
                 let yOffset: CGFloat = l.lineWidth + labelLineHeight + l.yOffset
                 
-                if l.labelPosition == .topRight
+                if l.labelPosition == .rightTop
                 {
                     ChartUtils.drawText(context: context,
-                        text: label,
-                        point: CGPoint(
-                            x: viewPortHandler.contentRight - xOffset,
-                            y: position.y - yOffset),
-                        align: .right,
-                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
+                                        text: label,
+                                        point: CGPoint(
+                                            x: viewPortHandler.contentRight - xOffset,
+                                            y: position.y - yOffset),
+                                        align: .right,
+                                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
                 }
-                else if l.labelPosition == .bottomRight
+                else if l.labelPosition == .rightBottom
                 {
                     ChartUtils.drawText(context: context,
-                        text: label,
-                        point: CGPoint(
-                            x: viewPortHandler.contentRight - xOffset,
-                            y: position.y + yOffset - labelLineHeight),
-                        align: .right,
-                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
+                                        text: label,
+                                        point: CGPoint(
+                                            x: viewPortHandler.contentRight - xOffset,
+                                            y: position.y + yOffset - labelLineHeight),
+                                        align: .right,
+                                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
                 }
-                else if l.labelPosition == .topLeft
+                else if l.labelPosition == .leftTop
                 {
                     ChartUtils.drawText(context: context,
-                        text: label,
-                        point: CGPoint(
-                            x: viewPortHandler.contentLeft + xOffset,
-                            y: position.y - yOffset),
-                        align: .left,
-                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
+                                        text: label,
+                                        point: CGPoint(
+                                            x: viewPortHandler.contentLeft + xOffset,
+                                            y: position.y - yOffset),
+                                        align: .left,
+                                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
                 }
                 else
                 {
                     ChartUtils.drawText(context: context,
-                        text: label,
-                        point: CGPoint(
-                            x: viewPortHandler.contentLeft + xOffset,
-                            y: position.y + yOffset - labelLineHeight),
-                        align: .left,
-                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
+                                        text: label,
+                                        point: CGPoint(
+                                            x: viewPortHandler.contentLeft + xOffset,
+                                            y: position.y + yOffset - labelLineHeight),
+                                        align: .left,
+                                        attributes: [NSAttributedString.Key.font: l.valueFont, NSAttributedString.Key.foregroundColor: l.valueTextColor])
                 }
             }
         }
@@ -527,7 +527,6 @@ open class YAxisRenderer: AxisRendererBase
         context.restoreGState()
     }
 }
-
 extension UIColor {
     public convenience init?(hexString: String) {
         let r, g, b, a: CGFloat
