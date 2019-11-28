@@ -154,7 +154,7 @@ open class YAxisRenderer: AxisRendererBase
             ChartUtils.drawText(
                 context: context,
                 text: text,
-                point: CGPoint(x: fixedPosition, y: positions[i].y + offset),
+                point: CGPoint(x: fixedPosition, y: positions[i].y + offset + yOffset),
                 align: textAlign,
                 attributes: [NSAttributedString.Key.font: labelFont, NSAttributedString.Key.foregroundColor: labelTextColor])
         }
