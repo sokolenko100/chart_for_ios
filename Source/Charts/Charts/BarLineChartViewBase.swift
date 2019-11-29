@@ -447,8 +447,7 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
             offsetRight = 15
             if rightAxis.isEnabled && rightAxis.isDrawLabelsEnabled
             {
-            //    offsetRight = 46
-            offsetRight=50
+               offsetRight = 50
             }
             
             if xAxis.isEnabled && xAxis.isDrawLabelsEnabled
